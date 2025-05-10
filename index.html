@@ -2,68 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini Proxy Browser</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Safe Relay Browser</title>
   <style>
-    body, html {
+    body {
       margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
       font-family: sans-serif;
-      background: #111;
+      height: 100vh;
       display: flex;
       flex-direction: column;
     }
     .bar {
-      display: flex;
       padding: 10px;
-      background: #222;
+      background: #eee;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .bar input {
       flex: 1;
       padding: 8px;
       font-size: 16px;
-      border: none;
-      border-radius: 4px 0 0 4px;
-      outline: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      min-width: 200px;
     }
     .bar button {
-      padding: 8px 16px;
+      padding: 8px 15px;
       font-size: 16px;
       background: #007bff;
       color: white;
       border: none;
-      border-radius: 0 4px 4px 0;
+      border-radius: 4px;
       cursor: pointer;
+    }
+    .bar button:hover {
+      background: #0056b3;
     }
     iframe {
       flex: 1;
       border: none;
       width: 100%;
     }
+    .error {
+      color: red;
+      padding: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="bar">
-    <input type="text" id="urlInput" placeholder="Enter URL or search" />
-    <button onclick="loadURL()">Go</button>
+    <input type="text" id="urlInput" placeholder="Enter full URL (https://...)">
+    <button onclick="load()">Load</button>
   </div>
-  <iframe id="proxyFrame" src="about:blank"></iframe>
+  <div class="error" id="error"></div>
+  <iframe id="viewer" src="about:blank"></iframe>
 
   <script>
-    const worker = "https://lucky-wave-7472.localhitsf.workers.dev";
-    const input = document.getElementById('urlInput');
-    const frame = document.getElementById('proxyFrame');
+    const WORKER_URL = "https://old-scene-c7ba.localhitsf.workers.dev";
 
-    function loadURL() {
-      const val = input.value.trim();
-      if (!val) return;
+    function load() {
+      const input = document.getElementById("urlInput").value.trim();
+      const errorDiv = document.getElementById("error");
+      const iframe = document.getElementById("viewer");
+      errorDiv.style.display = "none";
+      errorDiv.textContent = "";
 
-      const isURL = /^https?:\/\//.test(val) || /^[\w.-]+\.[a-z]{2,}/i.test(val);
-      const target = isURL ? (val.startsWith('http') ? val : 'https://' + val) : `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+      if (!input) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "Please enter a URL.";
+        return;
+      }
 
-      frame.src = `${worker}/?url=${encodeURIComponent(target)}`;
+      if (!/^https?:\/\//i.test(input)) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "URL must start with http:// or https://";
+        return;
+      }
+
+      try {
+        const encoded = btoa(input);
+        const relayUrl = `${WORKER_URL}/?url=${encodeURIComponent(encoded)}`;
+        iframe.src = relayUrl;
+      } catch (err) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "Encoding error: " + err.message;
+      }
     }
   </script>
 </body>
