@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Proxy Browser</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+    }
+    .bar {
+      display: flex;
+      padding: 10px;
+      background: #222;
+    }
+    .bar input {
+      flex: 1;
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      outline: none;
+    }
+    .bar button {
+      padding: 8px 16px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+    }
+    iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <input type="text" id="urlInput" placeholder="Enter URL or search" />
+    <button onclick="loadURL()">Go</button>
+  </div>
+  <iframe id="proxyFrame" src="about:blank"></iframe>
+
+  <script>
+    const worker = "https://lucky-wave-7472.localhitsf.workers.dev";
+    const input = document.getElementById('urlInput');
+    const frame = document.getElementById('proxyFrame');
+
+    function loadURL() {
+      const val = input.value.trim();
+      if (!val) return;
+
+      const isURL = /^https?:\/\//.test(val) || /^[\w.-]+\.[a-z]{2,}/i.test(val);
+      const target = isURL ? (val.startsWith('http') ? val : 'https://' + val) : `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+
+      frame.src = `${worker}/?url=${encodeURIComponent(target)}`;
+    }
+  </script>
+</body>
+</html>
